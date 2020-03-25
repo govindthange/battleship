@@ -9,9 +9,9 @@ class Field {
     context: any;
 
     constructor(container: Element) {
-        this.width = window.innerWidth;
+        this.width = window.innerWidth - 20;
         this.height = window.innerHeight;
-        this.density = 100;
+        this.density = 140;
 
         let canvas = document.createElement("canvas");
         this.context = canvas.getContext("2d");
@@ -20,12 +20,17 @@ class Field {
         canvas.height = this.height;
 
         let producer = new ParticleProducer(this.width, this.height, this.density);
-        producer.subscribe(this.renderParticle.bind(this));
+        producer.subscribe(this.renderParticles.bind(this));
     }
 
-    renderParticle(p: any) {
+    renderParticles(particles: Array<Particle>) {
+        this.context.fillStyle = "#000000";
+        this.context.fillRect(0, 0, this.width, this.height);
         this.context.fillStyle = "#ffffff";
-        this.context.fillRect(p.x, p.y, p.size, p.size);
+
+        particles.forEach(
+            (p: Particle) => this.context.fillRect(p.x, p.y, p.size, p.size)
+        );
     }
 }
 

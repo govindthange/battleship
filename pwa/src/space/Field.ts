@@ -31,13 +31,13 @@ class Field {
 
         this.totalEnemies = 14;
         let enemySource = new EnemyMotion(this.width, this.height, this.totalEnemies);
-        enemySource.subscribe(this.renderEnemies.bind(this));
+        enemySource.stream().subscribe((arr: any) => this.renderEnemies(arr));
 
         let particleSource = new ParticleMotion(this.width, this.height, this.totalStars);
-        particleSource.subscribe(this.renderParticles.bind(this));
+        particleSource.stream().subscribe((arr: any) => this.renderParticles(arr));
 
         let shipMotion = new BattleshipMotion(canvas);
-        shipMotion.subscribe(this.renderShip.bind(this));
+        shipMotion.stream().subscribe((coord: any) => this.renderShip(coord));
 
         let shipFires = new BattleshipFiring(canvas);
 

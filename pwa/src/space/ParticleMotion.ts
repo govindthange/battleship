@@ -27,9 +27,8 @@ class ParticleMotion {
         return new Particle(point, size);
     }
 
-    public subscribe(callback: any) {
-        let observable 
-            = range(1, this.density) // creates a stream of sequential values emitted 
+    public stream() {
+        return range(1, this.density) // creates a stream of sequential values emitted 
                                      // as per the provided range.
                 // 1st transform the sequential-value-steram to a new stream 
                 //    where each sequential value is projected as a particle objects.
@@ -54,8 +53,6 @@ class ParticleMotion {
                             return arr;
                         }));
                 }));
-        
-        observable.subscribe((arr: any) => callback(arr));
     }
 }
 

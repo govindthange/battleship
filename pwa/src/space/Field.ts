@@ -2,11 +2,14 @@ import { ParticleMotion } from "./ParticleMotion";
 import { Particle } from "./Particle";
 import { BattleshipMotion } from "../objects/BattleshipMotion";
 import { Battleship } from "../objects/Battleship";
+import { EnemyMotion } from "../objects/EnemyMotion";
+import { Enemy } from "../objects/Enemy";
 
 class Field {
     width: number;
     height: number;
-    density: number;
+    totalStars: number;
+    totalEnemies: number;
 
     context: any;
 
@@ -15,7 +18,7 @@ class Field {
     constructor(container: Element) {
         this.width = window.innerWidth - 20;
         this.height = window.innerHeight;
-        this.density = 140;
+        this.totalStars = 140;
 
         let canvas = document.createElement("canvas");
         this.context = canvas.getContext("2d");
@@ -25,8 +28,12 @@ class Field {
 
         this.ship = new Battleship(canvas);
 
-        let producer = new ParticleMotion(this.width, this.height, this.density);
-        producer.subscribe(this.renderParticles.bind(this));
+        this.totalEnemies = 14;
+        let enemySource = new EnemyMotion(this.width, this.height, this.totalEnemies);
+        enemySource.subscribe(this.renderEnemies.bind(this));
+
+        let particleSource = new ParticleMotion(this.width, this.height, this.totalStars);
+        particleSource.subscribe(this.renderParticles.bind(this));
 
         let shipMotion = new BattleshipMotion(canvas);
         shipMotion.subscribe(this.renderShip.bind(this));
@@ -35,7 +42,16 @@ class Field {
     renderSpace() {
         this.context.fillStyle = "#000000";
         this.context.fillRect(0, 0, this.width, this.height);
-        this.context.fillStyle = "#ffffff";
+    }
+
+    renderEnemies(enemies: Array<Enemy>) {
+        this.renderSpace();
+
+        enemies.forEach(
+            (enemy: Enemy) => enemy.render(this.context)
+        );
+
+        this.renderShip(null);
     }
 
     renderParticles(stars: Array<Particle>) {

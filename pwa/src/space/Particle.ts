@@ -14,7 +14,7 @@ class Particle {
     width: number;
 
     public render(context: any) {
-        console.log(this.point);
+        context.fillStyle = "#ffffff";
         context.fillRect(this.point.x, this.point.y, this.size.width, this.size.height)
     }
 }

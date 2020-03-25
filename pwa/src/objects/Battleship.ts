@@ -19,7 +19,7 @@ class Battleship {
             this.point.x = point.x;
         }
 
-        context.fillStyle = "red";
+        context.fillStyle = "green";
         context.beginPath();
         context.moveTo(this.point.x - this.width, this.point.y);
         context.lineTo(this.point.x, direction === "up" ? this.point.y - this.width : this.point.y + this.width);

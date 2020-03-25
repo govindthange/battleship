@@ -1,12 +1,21 @@
-class Particle {
-    x: number;
-    y: number;
-    size: number;
+import { Point } from "../core/Point";
+import { Size } from "../core/Size";
 
-    constructor(config: any) {
-        this.x = config.x;
-        this.y = config.y;
-        this.size = config.size;
+class Particle {
+
+    point: Point;
+    size: Size;
+    
+    constructor(point: Point, size: Size) {
+        this.point =  point;
+        this.size = size;
+    }
+
+    width: number;
+
+    public render(context: any) {
+        console.log(this.point);
+        context.fillRect(this.point.x, this.point.y, this.size.width, this.size.height)
     }
 }
 

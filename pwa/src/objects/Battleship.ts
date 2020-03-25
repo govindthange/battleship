@@ -1,10 +1,8 @@
+import { Point } from "../core/Point";
+
 class Battleship {
 
-    point: {
-        x: number,
-        y: number
-    }
-    
+    point: Point;    
     width: number;
     
     constructor(canvas: HTMLCanvasElement) {
@@ -15,7 +13,7 @@ class Battleship {
         this.width = 20;
     }
 
-    render(context: any, point: any, direction: string) {
+    render(context: any, point: Point, direction: string) {
 
         if (point) {
             this.point.x = point.x;

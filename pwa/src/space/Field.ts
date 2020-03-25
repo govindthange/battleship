@@ -5,7 +5,12 @@ import { Battleship } from "../objects/Battleship";
 import { EnemyMotion } from "../objects/EnemyMotion";
 import { Enemy } from "../objects/Enemy";
 import { BattleshipFiring } from "../objects/BattleshipFiring";
-import { combineLatest } from "rxjs";
+import { combineLatest, interval } from "rxjs";
+import { sample } from "rxjs/operators";
+
+const TOTAL_STARS: number = 140;
+const MAX_ENEMIES: number = 14;
+const REFRESH_RATE: number = 40;
 
 class Field {
     width: number;
@@ -20,7 +25,7 @@ class Field {
     constructor(container: Element) {
         this.width = window.innerWidth - 20;
         this.height = window.innerHeight;
-        this.totalStars = 140;
+        this.totalStars = TOTAL_STARS;
 
         let canvas = document.createElement("canvas");
         this.context = canvas.getContext("2d");
@@ -30,7 +35,7 @@ class Field {
 
         this.ship = new Battleship(canvas);
 
-        this.totalEnemies = 14;
+        this.totalEnemies = MAX_ENEMIES;
         let enemySource = new EnemyMotion(this.width, this.height, this.totalEnemies);
 
         let particleSource = new ParticleMotion(this.width, this.height, this.totalStars);
@@ -46,7 +51,10 @@ class Field {
                         (enemies: any, stars: any, shipCoordinates) => {
                             return {enemies: enemies, stars: stars, shipCoordinates: shipCoordinates};
                         }
-                    );
+                    )
+                    // Ensure that combineLatest never yields values faster 
+                    // than the configured REFRESH_RATE (40ms default)
+                    .pipe(sample(interval(REFRESH_RATE)));
 
         game.subscribe(
             (scene: any) => {

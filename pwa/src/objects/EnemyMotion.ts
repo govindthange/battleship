@@ -29,7 +29,7 @@ class EnemyMotion {
     }
 
     public subscribe(callback: any) {
-        let observable 
+        let observable
             = range(1, this.density)
                 .pipe(map(() => this.createEnemy()), toArray())
                 .pipe(flatMap((arr: any) => {

@@ -12,8 +12,8 @@ class BattleshipFiring {
                     )
                 )
         )
-        // user operators to convert i/p observable/stream to another o/p observable/stream.
-        // user pipe() to work with operators.
+        // use operators to convert i/p observable/stream to another o/p observable/stream.
+        // use pipe() to work with operators.
         // sample() will throttle the source stream to slowly emit values (1 every 200ms)
         .pipe(sample(interval(200)))
         // timestamp() will create a new stream that return timestamp along with the values of source observable

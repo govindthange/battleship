@@ -24,7 +24,7 @@ class Field {
 
     constructor(container: Element) {
         this.width = window.innerWidth - 20;
-        this.height = window.innerHeight;
+        this.height = window.innerHeight - 20;
         this.totalStars = TOTAL_STARS;
 
         let canvas = document.createElement("canvas");

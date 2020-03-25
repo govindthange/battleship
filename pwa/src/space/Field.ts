@@ -4,13 +4,14 @@ import { BattleshipMotion } from "../objects/BattleshipMotion";
 import { Battleship } from "../objects/Battleship";
 import { EnemyMotion } from "../objects/EnemyMotion";
 import { Enemy } from "../objects/Enemy";
+import { BattleshipFiring } from "../objects/BattleshipFiring";
 
 class Field {
     width: number;
     height: number;
     totalStars: number;
     totalEnemies: number;
-
+    
     context: any;
 
     ship: Battleship;
@@ -37,6 +38,9 @@ class Field {
 
         let shipMotion = new BattleshipMotion(canvas);
         shipMotion.subscribe(this.renderShip.bind(this));
+
+        let shipFires = new BattleshipFiring(canvas);
+
     }
 
     renderSpace() {

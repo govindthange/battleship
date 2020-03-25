@@ -32,13 +32,17 @@ class Field {
         shipMotion.subscribe(this.renderShip.bind(this));
     }
 
-    renderParticles(particles: Array<Particle>) {
+    renderSpace() {
         this.context.fillStyle = "#000000";
         this.context.fillRect(0, 0, this.width, this.height);
         this.context.fillStyle = "#ffffff";
+    }
 
-        particles.forEach(
-            (p: Particle) => this.context.fillRect(p.x, p.y, p.size, p.size)
+    renderParticles(stars: Array<Particle>) {
+        this.renderSpace();
+
+        stars.forEach(
+            (star: Particle) => star.render(this.context)
         );
 
         this.renderShip(null);

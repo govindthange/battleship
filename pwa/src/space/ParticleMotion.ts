@@ -14,26 +14,31 @@ class ParticleMotion {
         this.density = density;
     }
 
-    produce() {
-        return new Particle({
-                x: (Math.random() * this.width),
-                y: (Math.random() * this.height),
-                size: (Math.random() * 3 + 1) 
-            });
+    createParticle() {
+
+        let point = {
+            x: (Math.random() * this.width),
+            y: (Math.random() * this.height)
+        };
+
+        let temp = (Math.random() * 3 + 1);
+        let size =  {width: temp, height: temp};
+        
+        return new Particle(point, size);
     }
 
     public subscribe(callback: any) {
         let observable 
             = range(1, this.density)
-                .pipe(map(() => this.produce()), toArray())
+                .pipe(map(() => this.createParticle()), toArray())
                 .pipe(flatMap((arr: any) => {
                     return interval(100)
                         .pipe(map(()=> {
-                            arr.forEach((item: any) => {
-                                if (item.y >= this.height) {
-                                    item.y = 0;
+                            arr.forEach((p: any) => {
+                                if (p.point.y >= this.height) {
+                                    p.point.y = 0;
                                 }
-                                item.y += 3;
+                                p.point.y += 3;
                             });
                             return arr;
                         }));

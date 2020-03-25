@@ -29,11 +29,22 @@ class ParticleMotion {
 
     public subscribe(callback: any) {
         let observable 
-            = range(1, this.density)
+            = range(1, this.density) // creates a stream of sequential values emitted 
+                                     // as per the provided range.
+                // 1st transform the sequential-value-steram to a new stream 
+                //    where each sequential value is projected as a particle objects.
+                // 2nd take the stream of partical object values, 
+                //    accumulate all values in a single array object and then create another stream
+                //    that just emits that whole array as a single value in the stream.
                 .pipe(map(() => this.createParticle()), toArray())
-                .pipe(flatMap((arr: any) => {
+                .pipe(flatMap((arr: any) => { // flatMap will apply the projection function on 
+                                              // each value of its source stream (the single array) 
+                                              // and then merge it back to the source stream 
+                                              // i.e. the stream/observable created by the toArray() fn.
                     return interval(150)
-                        .pipe(map(()=> {
+                        .pipe(map(() => { // transform/project each value 
+                                          // (which is the whole array, not separate items in it) 
+                                          // in the source stream by updating its y coordinate.
                             arr.forEach((p: any) => {
                                 if (p.point.y >= this.height) {
                                     p.point.y = 0;
@@ -43,7 +54,7 @@ class ParticleMotion {
                             return arr;
                         }));
                 }));
-
+        
         observable.subscribe((arr: any) => callback(arr));
     }
 }

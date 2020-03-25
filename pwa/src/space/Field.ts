@@ -1,5 +1,7 @@
 import { ParticleProducer } from "./ParticleProducer";
 import { Particle } from "./Particle";
+import { BattleshipMotion } from "../objects/BattleshipMotion";
+import { Battleship } from "../objects/Battleship";
 
 class Field {
     width: number;
@@ -7,6 +9,8 @@ class Field {
     density: number;
 
     context: any;
+
+    ship: Battleship;
 
     constructor(container: Element) {
         this.width = window.innerWidth - 20;
@@ -19,8 +23,13 @@ class Field {
         canvas.width = this.width;
         canvas.height = this.height;
 
+        this.ship = new Battleship(canvas);
+
         let producer = new ParticleProducer(this.width, this.height, this.density);
         producer.subscribe(this.renderParticles.bind(this));
+
+        let shipMotion = new BattleshipMotion(canvas);
+        shipMotion.subscribe(this.renderShip.bind(this));
     }
 
     renderParticles(particles: Array<Particle>) {
@@ -31,6 +40,12 @@ class Field {
         particles.forEach(
             (p: Particle) => this.context.fillRect(p.x, p.y, p.size, p.size)
         );
+
+        this.renderShip(null);
+    }
+
+    renderShip(point: any) {
+        this.ship.render(this.context, point, "up");
     }
 }
 

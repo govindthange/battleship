@@ -40,7 +40,7 @@ class ParticleMotion {
                                               // each value of its source stream (the single array) 
                                               // and then merge it back to the source stream 
                                               // i.e. the stream/observable created by the toArray() fn.
-                    return interval(150)
+                    return interval(90)
                         .pipe(map(() => { // transform/project each value 
                                           // (which is the whole array, not separate items in it) 
                                           // in the source stream by updating its y coordinate.

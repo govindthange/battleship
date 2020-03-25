@@ -1,9 +1,9 @@
 import { range } from "rxjs";
 import { interval } from 'rxjs';
 import { map, mapTo, toArray, flatMap, mergeMap } from "rxjs/operators";
-import { Particle } from "./Particle"
+import { Enemy } from "./Enemy"
 
-class ParticleMotion {
+class EnemyMotion {
     width: number;
     height: number;
     density: number;
@@ -14,31 +14,32 @@ class ParticleMotion {
         this.density = density;
     }
 
-    createParticle() {
+    createEnemy() {
 
         let point = {
             x: (Math.random() * this.width),
             y: (Math.random() * this.height)
         };
 
-        let temp = (Math.random() * 3 + 1);
+        let temp = (Math.random() * 10 + 1);
         let size =  {width: temp, height: temp};
+        let speed = (Math.random() * 3) + 1;
         
-        return new Particle(point, size);
+        return new Enemy(point, size, speed);
     }
 
     public subscribe(callback: any) {
         let observable 
             = range(1, this.density)
-                .pipe(map(() => this.createParticle()), toArray())
+                .pipe(map(() => this.createEnemy()), toArray())
                 .pipe(flatMap((arr: any) => {
-                    return interval(150)
+                    return interval(70)
                         .pipe(map(()=> {
-                            arr.forEach((p: any) => {
-                                if (p.point.y >= this.height) {
-                                    p.point.y = 0;
+                            arr.forEach((e: any) => {
+                                if (e.point.y >= this.height) {
+                                    e.point.y = 0;
                                 }
-                                p.point.y += 3;
+                                e.point.y += (3 * e.speed);
                             });
                             return arr;
                         }));
@@ -48,4 +49,4 @@ class ParticleMotion {
     }
 }
 
-export { ParticleMotion as ParticleMotion };
+export { EnemyMotion as EnemyMotion };

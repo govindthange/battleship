@@ -3,10 +3,10 @@ class Particle {
     y: number;
     size: number;
 
-    constructor(x: number, y: number, size: number) {
-        this.x = x;
-        this.y = y;
-        this.size = size;
+    constructor(config: any) {
+        this.x = config.x;
+        this.y = config.y;
+        this.size = config.size;
     }
 }
 

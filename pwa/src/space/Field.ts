@@ -1,4 +1,4 @@
-import { ParticleProducer } from "./ParticleProducer";
+import { ParticleMotion } from "./ParticleMotion";
 import { Particle } from "./Particle";
 import { BattleshipMotion } from "../objects/BattleshipMotion";
 import { Battleship } from "../objects/Battleship";
@@ -25,7 +25,7 @@ class Field {
 
         this.ship = new Battleship(canvas);
 
-        let producer = new ParticleProducer(this.width, this.height, this.density);
+        let producer = new ParticleMotion(this.width, this.height, this.density);
         producer.subscribe(this.renderParticles.bind(this));
 
         let shipMotion = new BattleshipMotion(canvas);

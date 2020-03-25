@@ -3,7 +3,7 @@ import { interval } from 'rxjs';
 import { map, mapTo, toArray, flatMap, mergeMap } from "rxjs/operators";
 import { Particle } from "./Particle"
 
-class ParticleProducer {
+class ParticleMotion {
     width: number;
     height: number;
     density: number;
@@ -43,4 +43,4 @@ class ParticleProducer {
     }
 }
 
-export { ParticleProducer as ParticleProducer };
+export { ParticleMotion as ParticleMotion };

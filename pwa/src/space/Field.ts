@@ -1,7 +1,6 @@
 import { Particle } from "./Particle";
 import { Battleship } from "../objects/Battleship";
 import { Enemy } from "../objects/Enemy";
-import { BattleshipFiring } from "../objects/BattleshipFiring";
 import { combineLatest, interval } from "rxjs";
 import { sample } from "rxjs/operators";
 import { range } from "rxjs";
@@ -33,8 +32,6 @@ class Field {
 
         this.ship = new Battleship(canvas);
 
-        let shipFires = new BattleshipFiring(canvas);
-
         let game = combineLatest(
                         this.streamEnemyCoordinates(),
                         this.streamParticleCoordinates(),
@@ -59,16 +56,10 @@ class Field {
         this.context.fillStyle = "#000000";
         this.context.fillRect(0, 0, this.width, this.height);
 
-        enemies.forEach(
-            (enemy: Enemy) => enemy.render(this.context)
-        );
-
-        stars.forEach(
-            (star: Particle) => star.render(this.context)
-        );
+        enemies.forEach((enemy: Enemy) => enemy.render(this.context));
+        stars.forEach((star: Particle) => star.render(this.context));
 
         this.ship.render(this.context, shipCoordinates, "up");
-
         this.ship.renderHits(shipHits);
     }
 

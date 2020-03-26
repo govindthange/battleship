@@ -47,7 +47,7 @@ class Field {
         let game = combineLatest(
                         enemySource.stream(),
                         particleSource.stream(),
-                        shipMotion.stream(),
+                        this.ship.streamCoordinates(),
                         (enemies: any, stars: any, shipCoordinates) => {
                             return {enemies: enemies, stars: stars, shipCoordinates: shipCoordinates};
                         }

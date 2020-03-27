@@ -56,11 +56,11 @@ class Field {
         this.context.fillStyle = "#000000";
         this.context.fillRect(0, 0, this.width, this.height);
 
-        enemies.forEach((enemy: Enemy) => enemy.render(this.context));
-        stars.forEach((star: Particle) => star.render(this.context));
+        //enemies.forEach((enemy: Enemy) => enemy.render(this.context));
+        //stars.forEach((star: Particle) => star.render(this.context));
 
-        this.ship.render(this.context, shipCoordinates, "up");
-        this.ship.renderHits(shipHits);
+        //this.ship.render(this.context, shipCoordinates, "up");
+        this.ship.renderHits(this.context, shipHits, "up");
     }
 
     createParticle() {
@@ -78,15 +78,15 @@ class Field {
 
     public streamParticleCoordinates() {
         return range(1, FIELD_PARTICLE_DENSITY) // creates a stream of sequential values emitted 
-                                     // as per the provided range.
-                // 1st transform the sequential-value-steram to a new stream 
-                //    where each sequential value is projected as a particle objects.
-                // 2nd take the stream of partical object values, 
-                //    accumulate all values in a single array object and then create another stream
-                //    that just emits that whole array as a single value in the stream.
+                                                // as per the provided range.
+                // 1st transform the sequential-value-stream to a new stream 
+                //    where each sequential-value is changed to a particle-object and then projected.
+                // 2nd take this new stream of partical-object-values,
+                //    accumulate all values in a single array object (toArray() operator) and then 
+                //    create another stream that just emits 'the whole array' as a single value in the stream.
                 .pipe(map(() => this.createParticle()), toArray())
-                .pipe(flatMap((arr: any) => { // flatMap will apply the projection function on 
-                                              // each value of its source stream (the single array) 
+                .pipe(flatMap((arr: any) => { // flatMap will apply the projection function on each value of
+                                              // its source stream (the o/p of toArray() => 'arr' argument) 
                                               // and then merge it back to the source stream 
                                               // i.e. the stream/observable created by the toArray() fn.
                     return interval(90)
@@ -121,14 +121,14 @@ class Field {
     public streamEnemyCoordinates() {
         return range(1, MAX_ENEMIES) // creates a stream of sequential values emitted 
                                      // as per the provided range.
-                // 1st transform the sequential-value-steram to a new stream 
-                //    where each sequential value is projected as a particle objects.
-                // 2nd take the stream of partical object values, 
-                //    accumulate all values in a single array object and then create another stream
-                //    that just emits that whole array as a single value in the stream.
+                // 1st transform the sequential-value-stream to a new stream 
+                //    where each sequential-value is changed to a particle-object and then projected.
+                // 2nd take this new stream of partical-object-values,
+                //    accumulate all values in a single array object (toArray() operator) and then 
+                //    create another stream that just emits 'the whole array' as a single value in the stream.
                 .pipe(map(() => this.createEnemy()), toArray())
-                .pipe(flatMap((arr: any) => { // flatMap will apply the projection function on 
-                                              // each value of its source stream (the single array) 
+                .pipe(flatMap((arr: any) => { // flatMap will apply the projection function on each value of
+                                              // its source stream (the o/p of toArray() => 'arr' argument) 
                                               // and then merge it back to the source stream 
                                               // i.e. the stream/observable created by the toArray() fn.
                     return interval(70) // projection fn, the 1st parameter to flatMap fn, 

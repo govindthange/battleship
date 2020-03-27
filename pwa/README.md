@@ -1,6 +1,6 @@
 # Progressive Web App
 
-PWA is the client component of the Battleship game.
+## Highlights
 
 * Expressing network requests, mouse clicks, keyboard hits, or any user interaction as streams of events.
 * Sequences of events viewed as if they are being poured through a funnel.

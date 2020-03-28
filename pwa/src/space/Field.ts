@@ -2,13 +2,14 @@ import { Particle } from "./Particle";
 import { Battleship } from "../objects/Battleship";
 import { Enemy } from "../objects/Enemy";
 import { combineLatest, interval } from "rxjs";
-import { sample } from "rxjs/operators";
+import { sample, scan, distinctUntilChanged, distinctUntilKeyChanged } from "rxjs/operators";
 import { range } from "rxjs";
 import { map, mapTo, toArray, flatMap, mergeMap } from "rxjs/operators";
 
 const FIELD_PARTICLE_DENSITY = 140
 const MAX_ENEMIES: number = 14;
 const REFRESH_RATE: number = 40;
+const SHOOTING_SPEED = 15;
 
 class Field {
     width: number;
@@ -32,13 +33,38 @@ class Field {
 
         this.ship = new Battleship(canvas);
 
+        let enemyStream = this.streamEnemyCoordinates();
+        let starStream = this.streamParticleCoordinates();
+        let shipLocationStream = this.ship.streamCoordinates();
+
+        const SHIP_Y = this.ship.point.y;
+
+        let shipShotStream = combineLatest(
+                                this.ship.streamHits(),
+                                shipLocationStream,
+                                (shotEvents: any, spaceShip: any) => {
+                                    return {
+                                        timestamp: shotEvents.timestamp,
+                                        x: spaceShip.x
+                                    };
+                                }
+                            )
+                            .pipe(distinctUntilKeyChanged("timestamp"))
+                            .pipe(
+                                scan((shots: any, shot: any) => {
+                                    shots.push({x: shot.x, y: SHIP_Y});
+                                    console.log(shots.length);
+                                    return shots;
+                                }, [])
+                            );
+
         let game = combineLatest(
-                        this.streamEnemyCoordinates(),
-                        this.streamParticleCoordinates(),
-                        this.ship.streamCoordinates(),
-                        this.ship.streamHits(),
-                        (enemies: any, stars: any, shipCoordinates, shipHits) => {
-                        return {enemies: enemies, stars: stars, shipCoordinates: shipCoordinates, shipHits: shipHits};
+                        enemyStream,
+                        starStream,
+                        shipLocationStream,
+                        shipShotStream,
+                        (enemies: any, stars: any, spaceShip, shipShots) => {
+                            return {enemies: enemies, stars: stars, spaceShip: spaceShip, shipShots: shipShots};
                         }
                     )
                     // Ensure that combineLatest never yields values faster 
@@ -47,20 +73,24 @@ class Field {
 
         game.subscribe(
             (scene: any) => {
-                this.renderScene(scene.enemies, scene.stars, scene.shipCoordinates, scene.shipHits);
+                this.renderScene(scene.enemies, scene.stars, scene.spaceShip, scene.shipShots);
             }
-        )
+        );
     }
 
-    renderScene(enemies: any, stars: any, shipCoordinates: any, shipHits: any) {
+    renderScene(enemies: any, stars: any, spaceShip: any, shipShots: any) {
         this.context.fillStyle = "#000000";
         this.context.fillRect(0, 0, this.width, this.height);
 
-        //enemies.forEach((enemy: Enemy) => enemy.render(this.context));
-        //stars.forEach((star: Particle) => star.render(this.context));
+        enemies.forEach((enemy: Enemy) => enemy.render(this.context));
+        stars.forEach((star: Particle) => star.render(this.context));
 
-        //this.ship.render(this.context, shipCoordinates, "up");
-        this.ship.renderHits(this.context, shipHits, "up");
+        this.ship.render(this.context, spaceShip, "up");
+        shipShots.forEach(
+            (shot: any) => {
+                shot.y -= SHOOTING_SPEED;
+                this.ship.renderHits(this.context, shot, "up");
+            });
     }
 
     createParticle() {

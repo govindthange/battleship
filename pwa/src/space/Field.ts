@@ -52,6 +52,9 @@ class Field {
                             .pipe(distinctUntilKeyChanged("timestamp"))
                             .pipe(
                                 scan((shots: any, shot: any) => {
+                                    let temp = shots;
+                                    shots = shots.filter((s: any) => s.y > 0);
+                                    //console.log("before: %s, after: %s", temp.length, shots.length);
                                     shots.push({x: shot.x, y: SHIP_Y});
                                     console.log(shots.length);
                                     return shots;

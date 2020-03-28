@@ -1,21 +1,13 @@
-import { Point } from "../core/Point";
-import { Size } from "../core/Size";
+import { Base } from "../core/Base";
 
-class Particle {
-
-    point: Point;
-    size: Size;
+class Particle extends Base {
     
-    constructor(point: Point, size: Size) {
-        this.point =  point;
-        this.size = size;
+    constructor(x: number, y: number, width: number, height: number) {
+        super(null, x, y, width, height);
     }
 
-    width: number;
-
     public render(context: any) {
-        context.fillStyle = "#ffffff";
-        context.fillRect(this.point.x, this.point.y, this.size.width, this.size.height)
+        super.drawCircle(context, "white", this.x, this.y, this.width / 2);
     }
 }
 

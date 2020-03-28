@@ -33,7 +33,7 @@ class Field {
 
         this.ship = new Battleship(canvas);
 
-        let enemyStream = this.streamEnemyCoordinates(canvas);
+        let enemyStream = this.streamEnemyCoordinates();
         let starStream = this.streamParticleCoordinates();
         let shipLocationStream = this.ship.streamCoordinates();
 
@@ -97,16 +97,11 @@ class Field {
     }
 
     createParticle() {
-
-        let point = {
-            x: (Math.random() * this.width),
-            y: (Math.random() * this.height)
-        };
-
-        let temp = (Math.random() * 3 + 1);
-        let size =  {width: temp, height: temp};
+        let x = Math.random() * this.width,
+            y = Math.random() * this.height,
+            size = Math.random() * 5 + 1;
         
-        return new Particle(point, size);
+        return new Particle(x, y, size, size);
     }
 
     public streamParticleCoordinates() {
@@ -127,18 +122,17 @@ class Field {
                                           // (which is the whole array, not separate items in it) 
                                           // in the source stream by updating its y coordinate.
                             arr.forEach((p: any) => {
-                                if (p.point.y >= this.height) {
-                                    p.point.y = 0;
+                                if (p.y >= this.height) {
+                                    p.y = 0;
                                 }
-                                p.point.y += 3;
+                                p.y += 3;
                             });
                             return arr;
                         }));
                 }));
     }
 
-    createEnemy(canvas: HTMLCanvasElement) {
-
+    createEnemy() {
         let x = Math.random() * this.width,
             y = Math.random() * this.height,
             width = Math.random() * 10 + 1,
@@ -146,10 +140,10 @@ class Field {
 
         let speed = (Math.random() * 3) + 1;
         
-        return new Enemy(canvas, x, y, width, height, speed);
+        return new Enemy(x, y, width, height, speed);
     }
 
-    public streamEnemyCoordinates(canvas: HTMLCanvasElement) {
+    public streamEnemyCoordinates() {
         return range(1, MAX_ENEMIES) // creates a stream of sequential values emitted 
                                      // as per the provided range.
                 // 1st transform the sequential-value-stream to a new stream 
@@ -157,7 +151,7 @@ class Field {
                 // 2nd take this new stream of partical-object-values,
                 //    accumulate all values in a single array object (toArray() operator) and then 
                 //    create another stream that just emits 'the whole array' as a single value in the stream.
-                .pipe(map(() => this.createEnemy(canvas)), toArray())
+                .pipe(map(() => this.createEnemy()), toArray())
                 .pipe(flatMap((arr: any) => { // flatMap will apply the projection function on each value of
                                               // its source stream (the o/p of toArray() => 'arr' argument) 
                                               // and then merge it back to the source stream 

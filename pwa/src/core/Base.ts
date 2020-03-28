@@ -18,6 +18,13 @@ class Base {
         this.drawTriangle(context, color, this.x, this.y, this.width, this.height, direction);
     }
 
+    public drawCircle(context: any, color: string, x: number, y: number, radius: number) {
+        context.fillStyle = color;
+        context.beginPath();
+        context.arc(x, y, radius / 2, 0, 2 * Math.PI, false);
+        context.fill();
+    }
+
     public drawTriangle(context: any, color: string, x: number, y: number, width: number, height: number, direction: string) {
         context.fillStyle = color;
         context.beginPath();

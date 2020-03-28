@@ -1,5 +1,4 @@
-import { Base } from "./Base";
-import { Point } from "../core/Point";
+import { Base } from "../core/Base";
 import { merge, fromEvent, interval, of, from } from "rxjs";
 import { map, startWith, filter, sample, timestamp, toArray, flatMap} from "rxjs/operators";
 import { Size } from "../core/Size";

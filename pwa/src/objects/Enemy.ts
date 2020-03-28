@@ -1,11 +1,11 @@
-import { Base } from "./Base";
+import { Base } from "../core/Base";
 
 class Enemy extends Base {
 
     speed: number;
     
-    constructor(canvas: HTMLCanvasElement, x: number, y: number, width: number, height: number, speed: number) {
-        super(canvas, x, y, width, height);
+    constructor(x: number, y: number, width: number, height: number, speed: number) {
+        super(null, x, y, width, height);
         this.speed = speed;
     }
 

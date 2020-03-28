@@ -1,4 +1,5 @@
 import { Particle } from "./Particle";
+import { Util } from "../core/Util";
 import { Battleship } from "../objects/Battleship";
 import { Enemy } from "../objects/Enemy";
 import { combineLatest, interval } from "rxjs";
@@ -97,9 +98,9 @@ class Field {
     }
 
     createParticle() {
-        let x = Math.random() * this.width,
-            y = Math.random() * this.height,
-            size = Math.random() * 5 + 1;
+        let x = Util.random(this.width),
+            y = Util.random(this.height),
+            size = Util.randomRange(1, 5);
         
         return new Particle(x, y, size, size);
     }
@@ -133,12 +134,12 @@ class Field {
     }
 
     createEnemy() {
-        let x = Math.random() * this.width,
-            y = Math.random() * this.height,
-            width = Math.random() * 10 + 1,
-            height = Math.random() * 10 + 1; 
+        let x = Util.random(this.width),
+            y = Util.random(this.height),
+            width = Util.randomRange(1, 10),
+            height = Util.randomRange(1, 10); 
 
-        let speed = (Math.random() * 3) + 1;
+        let speed = Util.randomRange(1, 4);
         
         return new Enemy(x, y, width, height, speed);
     }

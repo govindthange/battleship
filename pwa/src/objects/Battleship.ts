@@ -4,19 +4,14 @@ import { map, startWith, filter, sample, timestamp, toArray, flatMap} from "rxjs
 import { Size } from "../core/Size";
 
 class Battleship extends Base {
-
-    shotSize: Size;
     
     constructor(canvas: HTMLCanvasElement) {
-        
         super(
               canvas,
               canvas.width / 2,
               canvas.height - 20,
               20,
               20);
-        
-        this.shotSize = {width: 3, height: 10};
     }
 
     render(context: any, newLocation: any, direction: string) {
@@ -25,7 +20,7 @@ class Battleship extends Base {
     }
 
     renderHits(context: any, shot: any, direction: string) {
-        this.drawTriangle(context, "yellow", shot.x, shot.y, this.shotSize.width, this.shotSize.height, direction);
+        this.drawTriangle(context, "yellow", shot.x, shot.y, shot.width, shot.height, direction);
     }
 
     public streamCoordinates() {

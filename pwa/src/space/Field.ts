@@ -2,7 +2,7 @@ import { Particle } from "./Particle";
 import { Util } from "../core/Util";
 import { Battleship } from "../objects/Battleship";
 import { Enemy } from "../objects/Enemy";
-import { combineLatest, interval } from "rxjs";
+import { combineLatest, interval, fromEvent } from "rxjs";
 import { sample, scan, distinctUntilChanged, distinctUntilKeyChanged } from "rxjs/operators";
 import { range } from "rxjs";
 import { map, mapTo, toArray, flatMap, mergeMap } from "rxjs/operators";
@@ -57,8 +57,8 @@ class Field {
                                     let temp = shots;
                                     shots = shots.filter((s: any) => s.y > 0);
                                     //console.log("before: %s, after: %s", temp.length, shots.length);
-                                    shots.push({x: shot.x, y: SHIP_Y});
-                                    console.log(shots.length);
+                                    shots.push({x: shot.x, y: SHIP_Y, width: 3, height: 10});
+                                    //console.log(shots.length);
                                     return shots;
                                 }, [])
                             );
@@ -98,7 +98,18 @@ class Field {
 
         enemies.forEach(
             (enemy: Enemy) => {
+
                 enemy.y += enemy.speed;
+
+                shipShots.forEach(
+                    (shot: any) => {
+                        if (enemy.y > 0 && shot.y > 0 && Util.didObjectOverlap(enemy, shot)) {
+                            enemy.isDestroyed = true;
+                            shot.y = -20;
+                        }
+                    }
+                );
+
                 enemy.render(this.context, "down")
             });
     }
@@ -141,7 +152,7 @@ class Field {
 
     createEnemyAircraft() {
         let x = Util.random(this.width),
-            y = 30,
+            y = -25,
             width = Util.randomRange(1, 10),
             height = Util.randomRange(1, 10); 
 
@@ -152,7 +163,9 @@ class Field {
 
     public streamEnemyCoordinates() {
         return interval(ENEMY_AIRCRAFT_FREQUENCY)
+        //return fromEvent(document, "keydown")
                 .pipe(scan((enemies: any) => {
+                    enemies = enemies.filter((e: any) => e.y < this.height);
                     enemies.push(this.createEnemyAircraft());
                     return enemies;
                 }, []))

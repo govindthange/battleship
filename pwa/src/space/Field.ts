@@ -8,9 +8,10 @@ import { range } from "rxjs";
 import { map, mapTo, toArray, flatMap, mergeMap } from "rxjs/operators";
 
 const FIELD_PARTICLE_DENSITY = 140
-const MAX_ENEMIES: number = 14;
 const REFRESH_RATE: number = 40;
 const SHOOTING_SPEED = 15;
+const ENEMY_AIRCRAFT_FREQUENCY: number = 1500;
+const ENEMY_AIRCRAFT_MAX_SPEED: number = 15;
 
 class Field {
     width: number;
@@ -35,7 +36,7 @@ class Field {
         this.ship = new Battleship(canvas);
 
         let enemyStream = this.streamEnemyCoordinates();
-        let starStream = this.streamParticleCoordinates();
+        let starStream = this.streamStarCoordinates();
         let shipLocationStream = this.ship.streamCoordinates();
 
         const SHIP_Y = this.ship.y;
@@ -63,12 +64,12 @@ class Field {
                             );
 
         let game = combineLatest(
-                        enemyStream,
                         starStream,
                         shipLocationStream,
                         shipShotStream,
-                        (enemies: any, stars: any, shipLocation, shipShots) => {
-                            return {enemies: enemies, stars: stars, shipLocation: shipLocation, shipShots: shipShots};
+                        enemyStream,
+                        (stars: any, shipLocation, shipShots, enemies: any) => {
+                            return {stars: stars, shipLocation: shipLocation, shipShots: shipShots, enemies: enemies};
                         }
                     )
                     // Ensure that combineLatest never yields values faster 
@@ -86,7 +87,6 @@ class Field {
         this.context.fillStyle = "#000000";
         this.context.fillRect(0, 0, this.width, this.height);
 
-        enemies.forEach((enemy: Enemy) => enemy.render(this.context, "down"));
         stars.forEach((star: Particle) => star.render(this.context));
 
         this.ship.render(this.context, shipLocation, "up");
@@ -95,9 +95,15 @@ class Field {
                 shot.y -= SHOOTING_SPEED;
                 this.ship.renderHits(this.context, shot, "up");
             });
+
+        enemies.forEach(
+            (enemy: Enemy) => {
+                enemy.y += enemy.speed;
+                enemy.render(this.context, "down")
+            });
     }
 
-    createParticle() {
+    createStar() {
         let x = Util.random(this.width),
             y = Util.random(this.height),
             size = Util.randomRange(1, 5);
@@ -105,7 +111,7 @@ class Field {
         return new Particle(x, y, size, size);
     }
 
-    public streamParticleCoordinates() {
+    public streamStarCoordinates() {
         return range(1, FIELD_PARTICLE_DENSITY) // creates a stream of sequential values emitted 
                                                 // as per the provided range.
                 // 1st transform the sequential-value-stream to a new stream 
@@ -113,7 +119,7 @@ class Field {
                 // 2nd take this new stream of partical-object-values,
                 //    accumulate all values in a single array object (toArray() operator) and then 
                 //    create another stream that just emits 'the whole array' as a single value in the stream.
-                .pipe(map(() => this.createParticle()), toArray())
+                .pipe(map(() => this.createStar()), toArray())
                 .pipe(flatMap((arr: any) => { // flatMap will apply the projection function on each value of
                                               // its source stream (the o/p of toArray() => 'arr' argument) 
                                               // and then merge it back to the source stream 
@@ -133,46 +139,23 @@ class Field {
                 }));
     }
 
-    createEnemy() {
+    createEnemyAircraft() {
         let x = Util.random(this.width),
-            y = Util.random(this.height),
+            y = 30,
             width = Util.randomRange(1, 10),
             height = Util.randomRange(1, 10); 
 
-        let speed = Util.randomRange(1, 4);
+        let speed = ENEMY_AIRCRAFT_MAX_SPEED / Util.randomRange(1, 3);
         
         return new Enemy(x, y, width, height, speed);
     }
 
     public streamEnemyCoordinates() {
-        return range(1, MAX_ENEMIES) // creates a stream of sequential values emitted 
-                                     // as per the provided range.
-                // 1st transform the sequential-value-stream to a new stream 
-                //    where each sequential-value is changed to a particle-object and then projected.
-                // 2nd take this new stream of partical-object-values,
-                //    accumulate all values in a single array object (toArray() operator) and then 
-                //    create another stream that just emits 'the whole array' as a single value in the stream.
-                .pipe(map(() => this.createEnemy()), toArray())
-                .pipe(flatMap((arr: any) => { // flatMap will apply the projection function on each value of
-                                              // its source stream (the o/p of toArray() => 'arr' argument) 
-                                              // and then merge it back to the source stream 
-                                              // i.e. the stream/observable created by the toArray() fn.
-                    return interval(70) // projection fn, the 1st parameter to flatMap fn, 
-                                        // will update array values every 70ms and merge back 
-                                        // the updated array to the main arr object, which is 
-                                        // a value of the source stream.
-                        .pipe(map(()=> { // transform/project each value 
-                                         // (which is the whole array, not separate items in it) 
-                                         // in the source stream by updating its y coordinate.
-                            arr.forEach((e: any) => {
-                                if (e.y >= this.height) {
-                                    e.y = 0;
-                                }
-                                e.y += (3 * e.speed);
-                            });
-                            return arr;
-                        }));
-                }));
+        return interval(ENEMY_AIRCRAFT_FREQUENCY)
+                .pipe(scan((enemies: any) => {
+                    enemies.push(this.createEnemyAircraft());
+                    return enemies;
+                }, []))
     }
 }
 

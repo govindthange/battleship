@@ -33,11 +33,11 @@ class Field {
 
         this.ship = new Battleship(canvas);
 
-        let enemyStream = this.streamEnemyCoordinates();
+        let enemyStream = this.streamEnemyCoordinates(canvas);
         let starStream = this.streamParticleCoordinates();
         let shipLocationStream = this.ship.streamCoordinates();
 
-        const SHIP_Y = this.ship.point.y;
+        const SHIP_Y = this.ship.y;
 
         let shipShotStream = combineLatest(
                                 this.ship.streamHits(),
@@ -66,8 +66,8 @@ class Field {
                         starStream,
                         shipLocationStream,
                         shipShotStream,
-                        (enemies: any, stars: any, spaceShip, shipShots) => {
-                            return {enemies: enemies, stars: stars, spaceShip: spaceShip, shipShots: shipShots};
+                        (enemies: any, stars: any, shipLocation, shipShots) => {
+                            return {enemies: enemies, stars: stars, shipLocation: shipLocation, shipShots: shipShots};
                         }
                     )
                     // Ensure that combineLatest never yields values faster 
@@ -76,19 +76,19 @@ class Field {
 
         game.subscribe(
             (scene: any) => {
-                this.renderScene(scene.enemies, scene.stars, scene.spaceShip, scene.shipShots);
+                this.renderScene(scene.enemies, scene.stars, scene.shipLocation, scene.shipShots);
             }
         );
     }
 
-    renderScene(enemies: any, stars: any, spaceShip: any, shipShots: any) {
+    renderScene(enemies: any, stars: any, shipLocation: any, shipShots: any) {
         this.context.fillStyle = "#000000";
         this.context.fillRect(0, 0, this.width, this.height);
 
-        enemies.forEach((enemy: Enemy) => enemy.render(this.context));
+        enemies.forEach((enemy: Enemy) => enemy.render(this.context, "down"));
         stars.forEach((star: Particle) => star.render(this.context));
 
-        this.ship.render(this.context, spaceShip, "up");
+        this.ship.render(this.context, shipLocation, "up");
         shipShots.forEach(
             (shot: any) => {
                 shot.y -= SHOOTING_SPEED;
@@ -137,21 +137,19 @@ class Field {
                 }));
     }
 
-    createEnemy() {
+    createEnemy(canvas: HTMLCanvasElement) {
 
-        let point = {
-            x: (Math.random() * this.width),
-            y: (Math.random() * this.height)
-        };
+        let x = Math.random() * this.width,
+            y = Math.random() * this.height,
+            width = Math.random() * 10 + 1,
+            height = Math.random() * 10 + 1; 
 
-        let temp = (Math.random() * 10 + 1);
-        let size =  {width: temp, height: temp};
         let speed = (Math.random() * 3) + 1;
         
-        return new Enemy(point, size, speed);
+        return new Enemy(canvas, x, y, width, height, speed);
     }
 
-    public streamEnemyCoordinates() {
+    public streamEnemyCoordinates(canvas: HTMLCanvasElement) {
         return range(1, MAX_ENEMIES) // creates a stream of sequential values emitted 
                                      // as per the provided range.
                 // 1st transform the sequential-value-stream to a new stream 
@@ -159,7 +157,7 @@ class Field {
                 // 2nd take this new stream of partical-object-values,
                 //    accumulate all values in a single array object (toArray() operator) and then 
                 //    create another stream that just emits 'the whole array' as a single value in the stream.
-                .pipe(map(() => this.createEnemy()), toArray())
+                .pipe(map(() => this.createEnemy(canvas)), toArray())
                 .pipe(flatMap((arr: any) => { // flatMap will apply the projection function on each value of
                                               // its source stream (the o/p of toArray() => 'arr' argument) 
                                               // and then merge it back to the source stream 
@@ -172,10 +170,10 @@ class Field {
                                          // (which is the whole array, not separate items in it) 
                                          // in the source stream by updating its y coordinate.
                             arr.forEach((e: any) => {
-                                if (e.point.y >= this.height) {
-                                    e.point.y = 0;
+                                if (e.y >= this.height) {
+                                    e.y = 0;
                                 }
-                                e.point.y += (3 * e.speed);
+                                e.y += (3 * e.speed);
                             });
                             return arr;
                         }));

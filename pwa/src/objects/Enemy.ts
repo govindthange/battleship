@@ -1,28 +1,16 @@
-import { Point } from "../core/Point";
-import { Size } from "../core/Size";
+import { Base } from "./Base";
 
-class Enemy {
+class Enemy extends Base {
 
-    point: Point;
-    size: Size;
     speed: number;
     
-    constructor(point: Point, size: Size, speed: number) {
-        this.point = point;
-        this.size = size;
+    constructor(canvas: HTMLCanvasElement, x: number, y: number, width: number, height: number, speed: number) {
+        super(canvas, x, y, width, height);
         this.speed = speed;
     }
 
-    width: number;
-
-    public render(context: any) {
-        context.fillStyle = "red";
-        context.beginPath();
-        context.moveTo(this.point.x - this.size.width, this.point.y);
-        context.lineTo(this.point.x, /*direction === "up" ? this.point.y - this.width :*/ this.point.y + this.size.width);
-        context.lineTo(this.point.x + this.size.width, this.point.y);
-        context.lineTo(this.point.x - this.size.width, this.point.y);
-        context.fill();
+    public render(context: any, direction: string) {
+        super.render(context, "red", direction);
     }
 }
 

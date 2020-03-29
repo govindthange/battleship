@@ -13,13 +13,13 @@ class Battleship extends Base {
               20);
     }
 
-    render(context: any, newLocation: any, direction: string) {
+    render(newLocation: any) {
         this.x = newLocation.x;
-        super.render(context, "green", direction);
+        super.render("green", "up");
     }
 
-    renderProjectile(context: any, shot: any, direction: string) {
-        this.drawTriangle(context, "yellow", shot.x, shot.y, shot.width, shot.height, direction);
+    renderProjectile(shot: any) {
+        this.drawTriangle("yellow", shot.x, shot.y, shot.width, shot.height, "up");
     }
 
     public streamCoordinates() {

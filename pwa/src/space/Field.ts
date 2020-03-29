@@ -15,6 +15,7 @@ class Field {
     totalStars: number;
     totalEnemies: number;
     
+    canvas: HTMLCanvasElement;
     context: any;
 
     ship: Battleship;
@@ -25,6 +26,7 @@ class Field {
         this.height = window.innerHeight - 20;
 
         let canvas = document.createElement("canvas");
+        this.canvas = canvas;
         this.context = canvas.getContext("2d");
         container.appendChild(canvas);
         canvas.width = this.width;
@@ -85,13 +87,13 @@ class Field {
         this.context.fillStyle = "#000000";
         this.context.fillRect(0, 0, this.width, this.height);
 
-        stars.forEach((star: Particle) => star.render(this.context));
+        stars.forEach((star: Particle) => star.render());
 
-        this.ship.render(this.context, shipLocation, "up");
+        this.ship.render(shipLocation);
         projectiles.forEach(
             (missile: any) => {
                 missile.y -= SHIP_PROJECTILE_SPEED;
-                this.ship.renderProjectile(this.context, missile, "up");
+                this.ship.renderProjectile(missile);
             });
 
         fleet.forEach(
@@ -108,7 +110,7 @@ class Field {
                     }
                 );
 
-                aircraft.render(this.context, "down")
+                aircraft.render()
             });
     }
 
@@ -120,7 +122,7 @@ class Field {
                 // 2nd take this new stream of partical-object-values,
                 //    accumulate all values in a single array object (toArray() operator) and then 
                 //    create another stream that just emits 'the whole array' as a single value in the stream.
-                .pipe(map(() => Particle.CreateParticleWithinFrame(this.width, this.height)), toArray())
+                .pipe(map(() => Particle.CreateParticleWithinFrame(this.canvas, this.width, this.height)), toArray())
                 .pipe(flatMap((arr: any) => { // flatMap will apply the projection function on each value of
                                               // its source stream (the o/p of toArray() => 'arr' argument) 
                                               // and then merge it back to the source stream 

@@ -1,6 +1,6 @@
 import { Base } from "../core/Base";
-import { merge, fromEvent, interval } from "rxjs";
-import { map, startWith, filter, sample, timestamp } from "rxjs/operators";
+import { merge, fromEvent, interval, from } from "rxjs";
+import { map, startWith, filter, sample, timestamp, scan, debounceTime } from "rxjs/operators";
 
 class Battleship extends Base {
     
@@ -23,11 +23,45 @@ class Battleship extends Base {
     }
 
     public streamCoordinates() {
+        return merge(this.streamMouseMoves(), this.streamKeyStrokes())
+                .pipe(scan(
+                    (acc: any, obj: any) => {
+                        //console.log("acc: %o, obj: %o", acc, obj);
+                        if (obj.event === "mousemove") {
+                            acc.x = obj.x;
+                            acc.y = obj.y;
+                        }
+                        else if (obj.event === "keydown"){
+                            acc.x += obj.x;
+                            acc.y += obj.y;
+                        }
+                        //console.log("accumuating %o", acc);
+                    return acc;
+                }, {x: this.x, y: this.y}));
+    }
+
+    streamMouseMoves() {
         return fromEvent(this.canvas, "mousemove") // observable of all mousemove values.
                 // Transform mousemove-event-stream to coordinate-value-streams.
-               .pipe(map((event: MouseEvent) => ({x: event.clientX, y: event.clientY})))
+               .pipe(map((event: MouseEvent) => ({x: event.clientX, y: event.clientY, event: "mousemove"})))
                // Transform coordinate-value-stream by prepending it with a starting coordinate value
-               .pipe(startWith({x: this.canvas.width/2, y: this.canvas.height/2}));
+               .pipe(startWith({x: this.canvas.width/2, y: this.canvas.height/2, event: "mousemove"}));
+   }
+
+   streamKeyStrokes() {
+       return fromEvent(document, "keydown")
+                .pipe(filter((evt: any) => { return evt.keyCode ===37 || evt.keyCode === 39 }))
+                .pipe(map((evt: any) => {
+                    switch(evt.keyCode) {
+                        case 37:
+                            return {x: -3, y:0, event: "keydown"};
+                        case 39:
+                            return {x: 3, y: 0, event: "keydown"};
+                        default:
+                            return {x: 0, y: 0, event: "keydown"};
+                    }
+                }))
+                .pipe(startWith({x: 0, y: 0, event: "keydown"}));
    }
 
    public streamProjectiles() {

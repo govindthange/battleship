@@ -1,53 +1,81 @@
-import { Point } from "../core/Point";
-import { merge, fromEvent, interval } from "rxjs";
-import { map, startWith, filter, sample, timestamp} from "rxjs/operators";
+import { Base } from "../core/Base";
+import { merge, fromEvent, interval, from } from "rxjs";
+import { map, startWith, filter, sample, timestamp, scan, debounceTime } from "rxjs/operators";
 
-class Battleship {
+class Battleship extends Base {
 
-    point: Point;    
-    width: number;
-
-    canvas: HTMLCanvasElement;
+    isDestroyed: boolean;
     
     constructor(canvas: HTMLCanvasElement) {
-
-        this.canvas = canvas;
-
-        this.point = {
-            x: canvas.width / 2,
-            y: canvas.height - 20
-        }
-        this.width = 20;
+        super(
+              canvas,
+              canvas.width / 2,
+              canvas.height - 20,
+              20,
+              20);
     }
 
-    render(context: any, point: Point, direction: string) {
+    render(newLocation: any) {
 
-        if (point) {
-            this.point.x = point.x;
+        let color = "green";
+
+        if (this.isDestroyed) {
+            color = "gray"; 
         }
-
-        context.fillStyle = "green";
-        context.beginPath();
-        context.moveTo(this.point.x - this.width, this.point.y);
-        context.lineTo(this.point.x, direction === "up" ? this.point.y - this.width : this.point.y + this.width);
-        context.lineTo(this.point.x + this.width, this.point.y);
-        context.lineTo(this.point.x - this.width, this.point.y);
-        context.fill();
+        else {
+            this.x = newLocation.x;
+        }
+        
+        super.render(color, "up");
     }
 
-    renderHits(event: any) {
-        // ToDo: render hits.
+    renderProjectile(shot: any) {
+        this.drawTriangle("yellow", shot.x, shot.y, shot.width, shot.height, "up");
     }
 
     public streamCoordinates() {
+        return merge(this.streamMouseMoves(), this.streamKeyStrokes())
+                .pipe(scan(
+                    (acc: any, obj: any) => {
+                        //console.log("acc: %o, obj: %o", acc, obj);
+                        if (obj.event === "mousemove") {
+                            acc.x = obj.x;
+                            acc.y = obj.y;
+                        }
+                        else if (obj.event === "keydown"){
+                            acc.x += obj.x;
+                            acc.y += obj.y;
+                        }
+                        //console.log("accumuating %o", acc);
+                    return acc;
+                }, {x: this.x, y: this.y}));
+    }
+
+    streamMouseMoves() {
         return fromEvent(this.canvas, "mousemove") // observable of all mousemove values.
                 // Transform mousemove-event-stream to coordinate-value-streams.
-               .pipe(map((event: MouseEvent) => ({x: event.clientX, y: event.clientY})))
-                // Transform coordinate-value-stream by prepending it with a starting coordinate value
-               .pipe(startWith({x: this.canvas.width/2, y: this.canvas.height/2}));
+               .pipe(map((event: MouseEvent) => ({x: event.clientX, y: event.clientY, event: "mousemove"})))
+               // Transform coordinate-value-stream by prepending it with a starting coordinate value
+               .pipe(startWith({x: this.canvas.width/2, y: this.canvas.height/2, event: "mousemove"}));
    }
 
-   public streamHits() {
+   streamKeyStrokes() {
+       return fromEvent(document, "keydown")
+                .pipe(filter((evt: any) => { return evt.keyCode ===37 || evt.keyCode === 39 }))
+                .pipe(map((evt: any) => {
+                    switch(evt.keyCode) {
+                        case 37:
+                            return {x: -3, y:0, event: "keydown"};
+                        case 39:
+                            return {x: 3, y: 0, event: "keydown"};
+                        default:
+                            return {x: 0, y: 0, event: "keydown"};
+                    }
+                }))
+                .pipe(startWith({x: 0, y: 0, event: "keydown"}));
+   }
+
+   public streamProjectiles() {
         return merge( // combine streams of click events and spacebar hit events
                 fromEvent(this.canvas, "click"), // observable stream of all click vlaues
                 fromEvent(document, "keydown") // observable stream of all keydown values

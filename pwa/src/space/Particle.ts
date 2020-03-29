@@ -1,21 +1,27 @@
-import { Point } from "../core/Point";
-import { Size } from "../core/Size";
+import { Base } from "../core/Base";
+import { Util } from "../core/Util";
 
-class Particle {
+class Particle extends Base {
 
-    point: Point;
-    size: Size;
+    color: string;
+
+    static CreateParticleWithinFrame(canvas: HTMLCanvasElement, width: number, height: number) {
+        let x = Util.random(width),
+            y = Util.random(height),
+            size = Util.randomRange(1, 5);
+        
+        return new Particle(canvas, x, y, size, size);
+    }
     
-    constructor(point: Point, size: Size) {
-        this.point =  point;
-        this.size = size;
+    constructor(canvas: HTMLCanvasElement, x: number, y: number, width: number, height: number) {
+        super(canvas, x, y, width, height);
+
+        let colors = ["white", "#E5FAF9", "#B2FCF9", "#FAC2B2", "#C7FAB2"];
+        this.color = colors[Util.randomRange(0, colors.length-1)];
     }
 
-    width: number;
-
-    public render(context: any) {
-        context.fillStyle = "#ffffff";
-        context.fillRect(this.point.x, this.point.y, this.size.width, this.size.height)
+    public render() {
+        super.drawCircle(this.color, this.x, this.y, this.width / 2);
     }
 }
 

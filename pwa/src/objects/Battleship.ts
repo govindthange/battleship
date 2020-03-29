@@ -3,6 +3,8 @@ import { merge, fromEvent, interval, from } from "rxjs";
 import { map, startWith, filter, sample, timestamp, scan, debounceTime } from "rxjs/operators";
 
 class Battleship extends Base {
+
+    isDestroyed: boolean;
     
     constructor(canvas: HTMLCanvasElement) {
         super(
@@ -14,8 +16,17 @@ class Battleship extends Base {
     }
 
     render(newLocation: any) {
-        this.x = newLocation.x;
-        super.render("green", "up");
+
+        let color = "green";
+
+        if (this.isDestroyed) {
+            color = "gray"; 
+        }
+        else {
+            this.x = newLocation.x;
+        }
+        
+        super.render(color, "up");
     }
 
     renderProjectile(shot: any) {

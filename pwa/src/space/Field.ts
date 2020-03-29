@@ -4,12 +4,11 @@ import { Battleship } from "../objects/Battleship";
 import { Fleet, Aircraft } from "../objects/Fleet";
 import { combineLatest, interval, range } from "rxjs";
 import { map, toArray, flatMap, sample, scan, distinctUntilKeyChanged } from "rxjs/operators";
+import { Base } from "../core/Base";
 
 const STAR_COUNT = 140
-const THROTTLE_PERIOD: number = 40; // The final data stream used for rendering canvas will not yield values faster than 40ms
-const SHIP_PROJECTILE_SPEED = 15;
 
-class Field {
+class Field extends Base {
     width: number;
     height: number;
     totalStars: number;
@@ -18,100 +17,15 @@ class Field {
     canvas: HTMLCanvasElement;
     context: any;
 
-    ship: Battleship;
-    enemyFleet: Fleet;
-
-    constructor(container: Element) {
-        this.width = window.innerWidth - 20;
-        this.height = window.innerHeight - 20;
-
-        let canvas = document.createElement("canvas");
+    constructor(canvas: HTMLCanvasElement, width: number, height: number) {
+        super(canvas, 0, 0, width, height);
         this.canvas = canvas;
         this.context = canvas.getContext("2d");
-        container.appendChild(canvas);
-        canvas.width = this.width;
-        canvas.height = this.height;
-
-        this.ship = new Battleship(canvas);
-        this.enemyFleet = new Fleet(canvas);
-
-        let fleet = this.enemyFleet.streamCoordinates();
-        let stars = this.streamStarCoordinates();
-        let shipLocations = this.ship.streamCoordinates();
-
-        const SHIP_Y = this.ship.y;
-
-        let projectiles = combineLatest(
-                                this.ship.streamProjectiles(),
-                                shipLocations,
-                                (shotEvents: any, spaceShip: any) => {
-                                    return {
-                                        timestamp: shotEvents.timestamp,
-                                        x: spaceShip.x
-                                    };
-                                }
-                            )
-                            .pipe(distinctUntilKeyChanged("timestamp"))
-                            .pipe(
-                                scan((projectiles: any, shot: any) => {
-                                    let temp = projectiles;
-                                    projectiles = projectiles.filter((s: any) => s.y > 0);
-                                    //console.log("before: %s, after: %s", temp.length, projectiles.length);
-                                    projectiles.push({x: shot.x, y: SHIP_Y, width: 3, height: 10});
-                                    //console.log(shots.length);
-                                    return projectiles;
-                                }, [])
-                            );
-
-        let game = combineLatest(
-                        stars,
-                        shipLocations,
-                        projectiles,
-                        fleet,
-                        (stars, shipLocation, projectiles, fleet) => {
-                            return {stars: stars, shipLocation: shipLocation, projectiles: projectiles, fleet: fleet};
-                        }
-                    )
-                    // Ensure that combineLatest never yields values faster 
-                    // than the configured THROTTLE_PERIOD (40ms default)
-                    .pipe(sample(interval(THROTTLE_PERIOD)));
-
-        game.subscribe(
-            (scene: any) => {
-                this.renderScene(scene.stars, scene.shipLocation, scene.projectiles, scene.fleet);
-            }
-        );
     }
 
-    renderScene(stars: any, shipLocation: any, projectiles: any, fleet: any) {
+    public render() {
         this.context.fillStyle = "#000000";
         this.context.fillRect(0, 0, this.width, this.height);
-
-        stars.forEach((star: Particle) => star.render());
-
-        this.ship.render(shipLocation);
-        projectiles.forEach(
-            (missile: any) => {
-                missile.y -= SHIP_PROJECTILE_SPEED;
-                this.ship.renderProjectile(missile);
-            });
-
-        fleet.forEach(
-            (aircraft: Aircraft) => {
-
-                aircraft.y += aircraft.speed;
-
-                projectiles.forEach(
-                    (missile: any) => {
-                        if (aircraft.y > 0 && missile.y > 0 && Util.didObjectOverlap(aircraft, missile)) {
-                            aircraft.isDestroyed = true;
-                            missile.y = -20;
-                        }
-                    }
-                );
-
-                aircraft.render()
-            });
     }
 
     public streamStarCoordinates() {

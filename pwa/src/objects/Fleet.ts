@@ -13,14 +13,14 @@ class Aircraft extends Base {
     isDestroyed: boolean;
     fallDirection: number = 0;
     
-    constructor(x: number, y: number, width: number, height: number, speed: number) {
-        super(null, x, y, width, height);
+    constructor(canvas: HTMLCanvasElement, x: number, y: number, width: number, height: number, speed: number) {
+        super(canvas, x, y, width, height);
         this.speed = speed;
         this.color = "red";
         this.isDestroyed = false;
     }
 
-    public render(context: any, direction: string) {
+    public render() {
         if (this.isDestroyed) {
             this.color = "gray";
             this.speed = 3;
@@ -32,7 +32,7 @@ class Aircraft extends Base {
             this.x += this.fallDirection * this.speed;
         }
 
-        super.render(context, this.color, direction);
+        super.render(this.color, "down");
     }
 }
 
@@ -47,7 +47,7 @@ class Fleet extends Base {
             canvas.height);
     }
 
-    dispatchAircraft() {
+    dispatchAircraft(canvas: HTMLCanvasElement) {
         let x = Util.random(this.width),
             y = -25,
             width = Util.randomRange(1, 10),
@@ -55,7 +55,7 @@ class Fleet extends Base {
 
         let speed = AIRCRAFT_MAX_SPEED / Util.randomRange(1, 3);
         
-        return new Aircraft(x, y, width, height, speed);
+        return new Aircraft(canvas, x, y, width, height, speed);
     }
 
     public streamCoordinates() {
@@ -63,7 +63,7 @@ class Fleet extends Base {
         //return fromEvent(document, "keydown")
                 .pipe(scan((enemies: any) => {
                     enemies = enemies.filter((e: any) => e.y < this.height);
-                    enemies.push(this.dispatchAircraft());
+                    enemies.push(this.dispatchAircraft(this.canvas));
                     return enemies;
                 }, []))
     }

@@ -4,6 +4,14 @@ import { Util } from "../core/Util";
 class Particle extends Base {
 
     color: string;
+
+    static CreateParticleWithinFrame(width: number, height: number) {
+        let x = Util.random(width),
+            y = Util.random(height),
+            size = Util.randomRange(1, 5);
+        
+        return new Particle(x, y, size, size);
+    }
     
     constructor(x: number, y: number, width: number, height: number) {
         super(null, x, y, width, height);

@@ -97,6 +97,11 @@ class Game {
                     }
                 );
 
+                if (Util.didObjectOverlap(aircraft, this.ship)) {
+                    aircraft.isDestroyed = true;
+                    this.ship.isDestroyed = true;
+                }
+
                 aircraft.render()
             });
     }

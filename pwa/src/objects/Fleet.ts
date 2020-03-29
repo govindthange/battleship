@@ -3,8 +3,8 @@ import { Util } from "../core/Util";
 import { interval } from "rxjs";
 import { scan } from "rxjs/operators";
 
-const AIRCRAFT_MAX_SPEED: number = 15;
-const AIRCRAFT_DISPATCH_RATE: number = 1500; // Prepare 1 aircraft for attack every 1500ms
+const AIRCRAFT_MAX_SPEED: number = 9;
+const AIRCRAFT_DISPATCH_RATE: number = 2000; // Prepare 1 aircraft for attack every 1500ms
 
 class Aircraft extends Base {
 

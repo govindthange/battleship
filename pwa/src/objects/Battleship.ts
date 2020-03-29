@@ -1,7 +1,6 @@
 import { Base } from "../core/Base";
-import { merge, fromEvent, interval, of, from } from "rxjs";
-import { map, startWith, filter, sample, timestamp, toArray, flatMap} from "rxjs/operators";
-import { Size } from "../core/Size";
+import { merge, fromEvent, interval } from "rxjs";
+import { map, startWith, filter, sample, timestamp } from "rxjs/operators";
 
 class Battleship extends Base {
     
@@ -19,7 +18,7 @@ class Battleship extends Base {
         super.render(context, "green", direction);
     }
 
-    renderHits(context: any, shot: any, direction: string) {
+    renderProjectile(context: any, shot: any, direction: string) {
         this.drawTriangle(context, "yellow", shot.x, shot.y, shot.width, shot.height, direction);
     }
 
@@ -31,7 +30,7 @@ class Battleship extends Base {
                .pipe(startWith({x: this.canvas.width/2, y: this.canvas.height/2}));
    }
 
-   public streamHits() {
+   public streamProjectiles() {
         return merge( // combine streams of click events and spacebar hit events
                 fromEvent(this.canvas, "click"), // observable stream of all click vlaues
                 fromEvent(document, "keydown") // observable stream of all keydown values

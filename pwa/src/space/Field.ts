@@ -1,17 +1,13 @@
 import { Particle } from "./Particle";
 import { Util } from "../core/Util";
 import { Battleship } from "../objects/Battleship";
-import { Enemy } from "../objects/Enemy";
-import { combineLatest, interval, fromEvent } from "rxjs";
-import { sample, scan, distinctUntilChanged, distinctUntilKeyChanged } from "rxjs/operators";
-import { range } from "rxjs";
-import { map, mapTo, toArray, flatMap, mergeMap } from "rxjs/operators";
+import { Fleet, Aircraft } from "../objects/Fleet";
+import { combineLatest, interval, range } from "rxjs";
+import { map, toArray, flatMap, sample, scan, distinctUntilKeyChanged } from "rxjs/operators";
 
-const FIELD_PARTICLE_DENSITY = 140
-const REFRESH_RATE: number = 40;
-const SHOOTING_SPEED = 15;
-const ENEMY_AIRCRAFT_FREQUENCY: number = 1500;
-const ENEMY_AIRCRAFT_MAX_SPEED: number = 15;
+const STAR_COUNT = 140
+const THROTTLE_PERIOD: number = 40; // The final data stream used for rendering canvas will not yield values faster than 40ms
+const SHIP_PROJECTILE_SPEED = 15;
 
 class Field {
     width: number;
@@ -22,6 +18,7 @@ class Field {
     context: any;
 
     ship: Battleship;
+    enemyFleet: Fleet;
 
     constructor(container: Element) {
         this.width = window.innerWidth - 20;
@@ -34,16 +31,17 @@ class Field {
         canvas.height = this.height;
 
         this.ship = new Battleship(canvas);
+        this.enemyFleet = new Fleet(canvas);
 
-        let enemyStream = this.streamEnemyCoordinates();
-        let starStream = this.streamStarCoordinates();
-        let shipLocationStream = this.ship.streamCoordinates();
+        let fleet = this.enemyFleet.streamCoordinates();
+        let stars = this.streamStarCoordinates();
+        let shipLocations = this.ship.streamCoordinates();
 
         const SHIP_Y = this.ship.y;
 
-        let shipShotStream = combineLatest(
-                                this.ship.streamHits(),
-                                shipLocationStream,
+        let projectiles = combineLatest(
+                                this.ship.streamProjectiles(),
+                                shipLocations,
                                 (shotEvents: any, spaceShip: any) => {
                                     return {
                                         timestamp: shotEvents.timestamp,
@@ -53,84 +51,76 @@ class Field {
                             )
                             .pipe(distinctUntilKeyChanged("timestamp"))
                             .pipe(
-                                scan((shots: any, shot: any) => {
-                                    let temp = shots;
-                                    shots = shots.filter((s: any) => s.y > 0);
-                                    //console.log("before: %s, after: %s", temp.length, shots.length);
-                                    shots.push({x: shot.x, y: SHIP_Y, width: 3, height: 10});
+                                scan((projectiles: any, shot: any) => {
+                                    let temp = projectiles;
+                                    projectiles = projectiles.filter((s: any) => s.y > 0);
+                                    //console.log("before: %s, after: %s", temp.length, projectiles.length);
+                                    projectiles.push({x: shot.x, y: SHIP_Y, width: 3, height: 10});
                                     //console.log(shots.length);
-                                    return shots;
+                                    return projectiles;
                                 }, [])
                             );
 
         let game = combineLatest(
-                        starStream,
-                        shipLocationStream,
-                        shipShotStream,
-                        enemyStream,
-                        (stars: any, shipLocation, shipShots, enemies: any) => {
-                            return {stars: stars, shipLocation: shipLocation, shipShots: shipShots, enemies: enemies};
+                        stars,
+                        shipLocations,
+                        projectiles,
+                        fleet,
+                        (stars, shipLocation, projectiles, fleet) => {
+                            return {stars: stars, shipLocation: shipLocation, projectiles: projectiles, fleet: fleet};
                         }
                     )
                     // Ensure that combineLatest never yields values faster 
-                    // than the configured REFRESH_RATE (40ms default)
-                    .pipe(sample(interval(REFRESH_RATE)));
+                    // than the configured THROTTLE_PERIOD (40ms default)
+                    .pipe(sample(interval(THROTTLE_PERIOD)));
 
         game.subscribe(
             (scene: any) => {
-                this.renderScene(scene.enemies, scene.stars, scene.shipLocation, scene.shipShots);
+                this.renderScene(scene.stars, scene.shipLocation, scene.projectiles, scene.fleet);
             }
         );
     }
 
-    renderScene(enemies: any, stars: any, shipLocation: any, shipShots: any) {
+    renderScene(stars: any, shipLocation: any, projectiles: any, fleet: any) {
         this.context.fillStyle = "#000000";
         this.context.fillRect(0, 0, this.width, this.height);
 
         stars.forEach((star: Particle) => star.render(this.context));
 
         this.ship.render(this.context, shipLocation, "up");
-        shipShots.forEach(
-            (shot: any) => {
-                shot.y -= SHOOTING_SPEED;
-                this.ship.renderHits(this.context, shot, "up");
+        projectiles.forEach(
+            (missile: any) => {
+                missile.y -= SHIP_PROJECTILE_SPEED;
+                this.ship.renderProjectile(this.context, missile, "up");
             });
 
-        enemies.forEach(
-            (enemy: Enemy) => {
+        fleet.forEach(
+            (aircraft: Aircraft) => {
 
-                enemy.y += enemy.speed;
+                aircraft.y += aircraft.speed;
 
-                shipShots.forEach(
-                    (shot: any) => {
-                        if (enemy.y > 0 && shot.y > 0 && Util.didObjectOverlap(enemy, shot)) {
-                            enemy.isDestroyed = true;
-                            shot.y = -20;
+                projectiles.forEach(
+                    (missile: any) => {
+                        if (aircraft.y > 0 && missile.y > 0 && Util.didObjectOverlap(aircraft, missile)) {
+                            aircraft.isDestroyed = true;
+                            missile.y = -20;
                         }
                     }
                 );
 
-                enemy.render(this.context, "down")
+                aircraft.render(this.context, "down")
             });
     }
 
-    createStar() {
-        let x = Util.random(this.width),
-            y = Util.random(this.height),
-            size = Util.randomRange(1, 5);
-        
-        return new Particle(x, y, size, size);
-    }
-
     public streamStarCoordinates() {
-        return range(1, FIELD_PARTICLE_DENSITY) // creates a stream of sequential values emitted 
-                                                // as per the provided range.
+        return range(1, STAR_COUNT) // creates a stream of sequential values emitted 
+                                    // as per the provided range.
                 // 1st transform the sequential-value-stream to a new stream 
                 //    where each sequential-value is changed to a particle-object and then projected.
                 // 2nd take this new stream of partical-object-values,
                 //    accumulate all values in a single array object (toArray() operator) and then 
                 //    create another stream that just emits 'the whole array' as a single value in the stream.
-                .pipe(map(() => this.createStar()), toArray())
+                .pipe(map(() => Particle.CreateParticleWithinFrame(this.width, this.height)), toArray())
                 .pipe(flatMap((arr: any) => { // flatMap will apply the projection function on each value of
                                               // its source stream (the o/p of toArray() => 'arr' argument) 
                                               // and then merge it back to the source stream 
@@ -148,27 +138,6 @@ class Field {
                             return arr;
                         }));
                 }));
-    }
-
-    createEnemyAircraft() {
-        let x = Util.random(this.width),
-            y = -25,
-            width = Util.randomRange(1, 10),
-            height = Util.randomRange(1, 10); 
-
-        let speed = ENEMY_AIRCRAFT_MAX_SPEED / Util.randomRange(1, 3);
-        
-        return new Enemy(x, y, width, height, speed);
-    }
-
-    public streamEnemyCoordinates() {
-        return interval(ENEMY_AIRCRAFT_FREQUENCY)
-        //return fromEvent(document, "keydown")
-                .pipe(scan((enemies: any) => {
-                    enemies = enemies.filter((e: any) => e.y < this.height);
-                    enemies.push(this.createEnemyAircraft());
-                    return enemies;
-                }, []))
     }
 }
 

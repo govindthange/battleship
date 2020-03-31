@@ -1,6 +1,7 @@
 import { Base } from "../core/Base";
 import { merge, fromEvent, interval, from } from "rxjs";
 import { map, startWith, filter, sample, timestamp, scan, debounceTime } from "rxjs/operators";
+import { Shape } from "./Shape";
 
 class Battleship extends Base {
 
@@ -30,7 +31,7 @@ class Battleship extends Base {
     }
 
     renderProjectile(shot: any) {
-        this.drawTriangle("yellow", shot.x, shot.y, shot.width, shot.height, "up");
+        Shape.drawTriangle(this.context, "yellow", shot.x, shot.y, shot.width, shot.height, "up");
     }
 
     public streamCoordinates() {

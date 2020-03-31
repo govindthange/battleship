@@ -1,5 +1,6 @@
 import { Base } from "../core/Base";
 import { Util } from "../core/Util";
+import { Shape } from "../objects/Shape";
 
 class Particle extends Base {
 
@@ -21,7 +22,7 @@ class Particle extends Base {
     }
 
     public render() {
-        super.drawCircle(this.color, this.x, this.y, this.width / 2);
+        Shape.drawCircle(this.context, this.color, this.x, this.y, this.width/2);
     }
 }
 

@@ -14,11 +14,19 @@ class Game {
     field: Field;
     ship: Battleship;
     enemyFleet: Fleet;
+    
+    canvas: HTMLCanvasElement;
+    explosion: any;
 
     constructor(canvas: HTMLCanvasElement, width: number, height: number) {
+        this.canvas = canvas;
+        
         this.field = new Field(canvas, width, height);
         this.ship = new Battleship(canvas);
         this.enemyFleet = new Fleet(canvas);        
+
+        this.explosion = new Image();
+        this.explosion.src = "/images/explosion.svg";
     }
 
     public start() {
@@ -93,6 +101,7 @@ class Game {
                         if (aircraft.y > 0 && missile.y > 0 && Util.didObjectOverlap(aircraft, missile)) {
                             aircraft.isDestroyed = true;
                             missile.y = -20;
+                            this.destroyObject(aircraft, aircraft.width*2, aircraft.height * 2);
                         }
                     }
                 );
@@ -100,10 +109,23 @@ class Game {
                 if (Util.didObjectOverlap(aircraft, this.ship)) {
                     aircraft.isDestroyed = true;
                     this.ship.isDestroyed = true;
+
+                    this.destroyObject(this.ship, 0, 0);
                 }
 
                 aircraft.render()
             });
+    }
+
+    destroyObject(object: any, offsetX: number, offsetY: number) {
+
+        let imageWidth = this.explosion.naturalWidth;
+        let imageHeight = this.explosion.naturalHeight;
+        let explosionSize = 100;
+        let x = object.x - imageWidth / 2 + object.width + offsetX;
+        let y = object.y - imageHeight / 2 + offsetY;
+        //console.log("width: %d, height: %d, x: %d, y: %d, width: %d, height: %d", imageWidth, imageHeight, object.x, object.y, object.width, object.height);
+        this.canvas.getContext("2d").drawImage(this.explosion, x, y, 100, 100);
     }
 }
 

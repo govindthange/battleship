@@ -2,7 +2,6 @@ import { Base } from "../core/Base";
 import { Util } from "../core/Util";
 import { interval } from "rxjs";
 import { scan } from "rxjs/operators";
-import { Shape } from "./Shape";
 
 const AIRCRAFT_MAX_SPEED: number = 6;
 const AIRCRAFT_DISPATCH_RATE: number = 2000; // Prepare 1 aircraft for attack every 2000ms
@@ -10,23 +9,26 @@ const AIRCRAFT_DISPATCH_RATE: number = 2000; // Prepare 1 aircraft for attack ev
 class Aircraft extends Base {
 
     speed: number;
-    color1: string;
-    color2: string;
     isDestroyed: boolean;
     fallDirection: number = 0;
+    image: any;
+    crashImage: any;
     
     constructor(canvas: HTMLCanvasElement, x: number, y: number, width: number, height: number, speed: number) {
         super(canvas, x, y, width, height);
         this.speed = speed;
-        this.color1 = "#0AFAF3";
-        this.color2 = "#5B92FA";
         this.isDestroyed = false;
+
+        this.image = new Image();
+        this.image.src = "/images/navicella-spaziale.svg";
+        this.crashImage = new Image();
+        this.crashImage.src = "/images/navicella-spaziale-crashed.svg";
     }
 
     public render() {
+
+        let image = this.image
         if (this.isDestroyed) {
-            this.color1 = "#11473C";
-            this.color2 = "#444E61";
             this.speed = 3;
 
             if (this.fallDirection == 0) {
@@ -34,14 +36,14 @@ class Aircraft extends Base {
             }
 
             this.x += this.fallDirection * this.speed;
+            image = this.crashImage;
         }
 
-        Shape.drawAircraft(this.context, this.color1, this.color2, this.x, this.y, this.width, this.height, "down");
+        this.context.drawImage(image, this.x - 35, this.y - 50, this.width, this.height);
     }
 }
 
-class Fleet extends Base {
-    
+class Fleet extends Base {    
     constructor(canvas: HTMLCanvasElement) {
         super(
             canvas,
@@ -54,7 +56,7 @@ class Fleet extends Base {
     dispatchAircraft(canvas: HTMLCanvasElement) {
         let x = Util.random(this.width),
             y = -25,
-            width = Util.randomRange(4, 7),
+            width = 60,
             height = width;
 
         let speed = AIRCRAFT_MAX_SPEED / Util.randomRange(1, 3);
@@ -71,7 +73,6 @@ class Fleet extends Base {
                     return enemies;
                 }, []))
     }
-
 }
 
 export { Aircraft, Fleet };

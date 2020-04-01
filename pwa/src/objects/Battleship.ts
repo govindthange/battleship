@@ -6,32 +6,40 @@ import { Shape } from "./Shape";
 class Battleship extends Base {
 
     isDestroyed: boolean;
+    image: any;
+    crashImage: any;
     
     constructor(canvas: HTMLCanvasElement) {
         super(
               canvas,
               canvas.width / 2,
               canvas.height - 20,
-              20,
-              20);
+              80,
+              80);
+
+        this.image = new Image();
+        this.image.src = "/images/spaceship.svg";
+
+        this.crashImage = new Image();
+        this.crashImage.src = "/images/spaceship-crashed.svg";
     }
 
     render(newLocation: any) {
 
-        let color = "green";
+        let image = this.image;
 
         if (this.isDestroyed) {
-            color = "gray"; 
+            image = this.crashImage;
         }
         else {
             this.x = newLocation.x;
         }
         
-        super.render(color, "up");
+        this.context.drawImage(image, this.x - 40, this.y - 60, this.width, this.height);
     }
 
     renderProjectile(shot: any) {
-        Shape.drawTriangle(this.context, "yellow", shot.x, shot.y, shot.width, shot.height, "up");
+        Shape.drawTriangle(this.context, "yellow", shot.x, shot.y - 45, shot.width, shot.height, "up");
     }
 
     public streamCoordinates() {
@@ -41,11 +49,11 @@ class Battleship extends Base {
                         //console.log("acc: %o, obj: %o", acc, obj);
                         if (obj.event === "mousemove") {
                             acc.x = obj.x;
-                            acc.y = obj.y;
+                            acc.y = obj.y - 45;
                         }
                         else if (obj.event === "keydown"){
                             acc.x += obj.x;
-                            acc.y += obj.y;
+                            acc.y += obj.y - 45;
                         }
                         //console.log("accumuating %o", acc);
                     return acc;

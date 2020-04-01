@@ -100,43 +100,44 @@ class Game {
                 aircraft.projectiles.forEach(
                     (missile: any) => {
                         missile.y += FLEET_PROJECTILE_SPEED;
-                        if (Util.didObjectOverlap(this.ship, missile)) {
+                        if (Util.didPointsOverlap(this.ship, missile, 20)) {
                             this.ship.isDestroyed = true;
-                            this.destroyObject(this.ship, 0, 0);
+                            this.destroyShip();
                         }
                     }
                 )
 
                 projectiles.forEach(
                     (missile: any) => {
-                        if (aircraft.y > 0 && missile.y > 0 && Util.didObjectOverlap(aircraft, missile)) {
+                        if (aircraft.y > 0 && missile.y > 0 && Util.didPointsOverlap(aircraft, missile, 20)) {
                             aircraft.isDestroyed = true;
                             missile.y = -20;
-                            this.destroyObject(aircraft, aircraft.width*2, aircraft.height * 2);
+                            this.destroyObject(aircraft, 0, -aircraft.height*1.65);
                         }
                     }
                 );
 
-                if (Util.didObjectOverlap(aircraft, this.ship)) {
+                if (Util.didPointsOverlap(aircraft, this.ship, 50)) {
                     aircraft.isDestroyed = true;
                     this.ship.isDestroyed = true;
 
-                    this.destroyObject(this.ship, 0, 0);
+                    this.destroyShip();
                 }
 
-                aircraft.render()
+                aircraft.render();
             });
+    }
+    
+    destroyShip() {
+        this.destroyObject(this.ship, 25, -this.ship.height * 1.25);
     }
 
     destroyObject(object: any, offsetX: number, offsetY: number) {
-
-        let imageWidth = this.explosion.naturalWidth;
-        let imageHeight = this.explosion.naturalHeight;
         let explosionSize = 100;
-        let x = object.x - imageWidth / 2 + object.width + offsetX;
-        let y = object.y - imageHeight / 2 + offsetY;
+        let x = object.x  - object.width + offsetX;
+        let y = object.y + offsetY;
         //console.log("width: %d, height: %d, x: %d, y: %d, width: %d, height: %d", imageWidth, imageHeight, object.x, object.y, object.width, object.height);
-        this.canvas.getContext("2d").drawImage(this.explosion, x, y, 100, 100);
+        this.canvas.getContext("2d").drawImage(this.explosion, x, y, explosionSize, explosionSize);
     }
 }
 

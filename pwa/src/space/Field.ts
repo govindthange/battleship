@@ -1,25 +1,14 @@
 import { Particle } from "./Particle";
-import { Util } from "../core/Util";
-import { Battleship } from "../objects/Battleship";
-import { Fleet, Aircraft } from "../objects/Fleet";
-import { combineLatest, interval, range } from "rxjs";
-import { map, toArray, flatMap, sample, scan, distinctUntilKeyChanged } from "rxjs/operators";
+import { interval, range } from "rxjs";
+import { map, toArray, flatMap } from "rxjs/operators";
 import { Base } from "../core/Base";
 
 const STAR_COUNT = 140
 
 class Field extends Base {
-    width: number;
-    height: number;
-    totalStars: number;
-    totalEnemies: number;
-    
-    canvas: HTMLCanvasElement;
-    context: any;
 
     constructor(canvas: HTMLCanvasElement, width: number, height: number) {
         super(canvas, 0, 0, width, height);
-        this.canvas = canvas;
         this.context = canvas.getContext("2d");
     }
 

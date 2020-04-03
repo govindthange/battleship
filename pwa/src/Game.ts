@@ -8,6 +8,7 @@ import { Util } from './core/Util';
 
 const THROTTLE_PERIOD: number = 40; // The final data stream used for rendering canvas will not yield values faster than 40ms
 const SHIP_PROJECTILE_SPEED = 15;
+const FLEET_PROJECTILE_SPEED = 15;
 
 class Game {
 
@@ -95,6 +96,16 @@ class Game {
             (aircraft: Aircraft) => {
 
                 aircraft.y += aircraft.speed;
+
+                aircraft.projectiles.forEach(
+                    (missile: any) => {
+                        missile.y += FLEET_PROJECTILE_SPEED;
+                        if (Util.didObjectOverlap(this.ship, missile)) {
+                            this.ship.isDestroyed = true;
+                            this.destroyObject(this.ship, 0, 0);
+                        }
+                    }
+                )
 
                 projectiles.forEach(
                     (missile: any) => {

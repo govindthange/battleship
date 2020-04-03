@@ -1,7 +1,7 @@
 import { Base } from "../core/Base";
 import { Util } from "../core/Util";
 import { interval } from "rxjs";
-import { scan } from "rxjs/operators";
+import { scan, map } from "rxjs/operators";
 import { Shape } from "./Shape";
 
 const AIRCRAFT_MAX_SPEED: number = 6;
@@ -14,6 +14,8 @@ class Aircraft extends Base {
     color2: string;
     isDestroyed: boolean;
     fallDirection: number = 0;
+
+    projectiles: any;
     
     constructor(canvas: HTMLCanvasElement, x: number, y: number, width: number, height: number, speed: number) {
         super(canvas, x, y, width, height);
@@ -21,6 +23,8 @@ class Aircraft extends Base {
         this.color1 = "#0AFAF3";
         this.color2 = "#5B92FA";
         this.isDestroyed = false;
+
+        this.projectiles = [];
     }
 
     public render() {
@@ -34,6 +38,11 @@ class Aircraft extends Base {
             }
 
             this.x += this.fallDirection * this.speed;
+        }
+        else {
+            this.projectiles.forEach((p: any) => {
+                Shape.drawTriangle(this.context, "orange", p.x, p.y, p.width, p.height, "down");
+            })
         }
 
         Shape.drawAircraft(this.context, this.color1, this.color2, this.x, this.y, this.width, this.height, "down");
@@ -67,11 +76,19 @@ class Fleet extends Base {
         //return fromEvent(document, "keydown")
                 .pipe(scan((enemies: any) => {
                     enemies = enemies.filter((e: any) => e.y < this.height);
-                    enemies.push(this.dispatchAircraft(this.canvas));
+
+                    let enemy = this.dispatchAircraft(this.canvas);
+                    
+                    interval(1500)
+                        .subscribe(() => {
+                            enemy.projectiles = enemy.projectiles.filter((p: any) => p.y < this.canvas.height);
+                            enemy.projectiles.push({x: enemy.x, y: enemy.y, width: 2, height: 5});
+                        })
+
+                    enemies.push(enemy);
                     return enemies;
                 }, []))
     }
-
 }
 
 export { Aircraft, Fleet };

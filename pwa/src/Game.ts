@@ -85,7 +85,7 @@ class Game {
         stars.forEach((star: Particle) => star.render());
 
         this.ship.render(shipLocation);
-
+        
         projectiles.forEach(
             (missile: any) => {
                 missile.y -= SHIP_PROJECTILE_SPEED;
@@ -102,7 +102,7 @@ class Game {
                         missile.y += FLEET_PROJECTILE_SPEED;
                         if (Util.didObjectOverlap(this.ship, missile)) {
                             this.ship.isDestroyed = true;
-                            this.destroyObject(this.ship, 0, 0);
+                            this.destroyShip();
                         }
                     }
                 )
@@ -121,11 +121,15 @@ class Game {
                     aircraft.isDestroyed = true;
                     this.ship.isDestroyed = true;
 
-                    this.destroyObject(this.ship, 0, 0);
+                    this.destroyShip();
                 }
 
                 aircraft.render()
             });
+    }
+    
+    destroyShip() {
+        this.destroyObject(this.ship, 0, 0);
     }
 
     destroyObject(object: any, offsetX: number, offsetY: number) {

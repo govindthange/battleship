@@ -2,7 +2,7 @@ import { Field } from './space/Field';
 import { Battleship } from './objects/Battleship';
 import { Fleet, Aircraft } from './objects/Fleet';
 import { combineLatest, interval, range, Subject, concat, Observable, of } from 'rxjs';
-import { distinctUntilKeyChanged, scan, sample, map, toArray, flatMap, startWith, concatAll } from 'rxjs/operators';
+import { distinctUntilKeyChanged, scan, sample, map, toArray, flatMap, startWith, concatAll, filter } from 'rxjs/operators';
 import { Particle } from './space/Particle';
 import { Util } from './core/Util';
 
@@ -60,6 +60,7 @@ class Game {
                                     };
                                 }
                             )
+                            .pipe(filter(() => !this.ship.isDestroyed))
                             .pipe(distinctUntilKeyChanged("timestamp"))
                             .pipe(
                                 scan((projectiles: any, shot: any) => {

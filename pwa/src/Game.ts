@@ -21,6 +21,11 @@ class Game {
 
     scoreSubject: Subject<any>;
 
+    missileAudio: any;
+    aircraftExplosionAudio: any;
+    shipExplosionAudio: any;
+    collisionAudio: any;
+
     constructor(canvas: HTMLCanvasElement, width: number, height: number) {
         this.canvas = canvas;
 
@@ -33,6 +38,11 @@ class Game {
 
         this.explosion = new Image();
         this.explosion.src = "/images/explosion.svg";
+
+        this.missileAudio = new Audio('./media/fire.mp3');
+        this.aircraftExplosionAudio = new Audio('./media/aircraft-explosion.mp3');
+        this.shipExplosionAudio = new Audio('./media/battleship-explosion.mp3');
+        this.collisionAudio = new Audio('./media/collision.mp3');
     }
 
     public start() {
@@ -68,6 +78,7 @@ class Game {
                                     projectiles = projectiles.filter((s: any) => s.y > 0);
                                     //console.log("before: %s, after: %s", temp.length, projectiles.length);
                                     projectiles.push({x: shot.x, y: SHIP_Y, width: 3, height: 10});
+                                    this.missileAudio.play();
                                     //console.log(shots.length);
                                     return projectiles;
                                 }, [])
@@ -119,6 +130,7 @@ class Game {
                         if (Util.didObjectOverlap(this.ship, missile)) {
                             this.ship.isDestroyed = true;
                             this.destroyShip();
+                            this.shipExplosionAudio.play();
                         }
                     }
                 )
@@ -132,6 +144,7 @@ class Game {
                             aircraft.isDestroyed = true;
                             missile.y = -20;
                             this.destroyObject(aircraft, aircraft.width*2, aircraft.height * 2);
+                            this.aircraftExplosionAudio.play();
                         }
                     }
                 );
@@ -141,6 +154,7 @@ class Game {
                     this.ship.isDestroyed = true;
 
                     this.destroyShip();
+                    this.collisionAudio.play();
                 }
 
                 aircraft.render()

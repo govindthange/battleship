@@ -17,6 +17,12 @@ class Field extends Base {
         this.context.fillRect(0, 0, this.width, this.height);
     }
 
+    public renderScore(score: number) {
+        this.context.fillStyle = "#ffffff";
+        this.context.font = "bold 18px sans-serif";
+        this.context.fillText("Score: " + score, 15, 20);
+    }
+
     public streamStarCoordinates() {
         return range(1, STAR_COUNT) // creates a stream of sequential values emitted 
                                     // as per the provided range.

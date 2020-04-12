@@ -39,13 +39,11 @@ class Aircraft extends Base {
 
             this.x += this.fallDirection * this.speed;
         }
-        else {
-            this.projectiles.forEach((p: any) => {
-                Shape.drawTriangle(this.context, "orange", p.x, p.y, p.width, p.height, "down");
-            })
-        }
 
         Shape.drawAircraft(this.context, this.color1, this.color2, this.x, this.y, this.width, this.height, "down");
+        this.projectiles.forEach((p: any) => {
+            Shape.drawTriangle(this.context, "orange", p.x, p.y, p.width, p.height, "down");
+        })
     }
 }
 
@@ -82,7 +80,9 @@ class Fleet extends Base {
                     interval(1500)
                         .subscribe(() => {
                             enemy.projectiles = enemy.projectiles.filter((p: any) => p.y < this.canvas.height);
-                            enemy.projectiles.push({x: enemy.x, y: enemy.y, width: 2, height: 5});
+                            if (!enemy.isDestroyed) {
+                                enemy.projectiles.push({x: enemy.x, y: enemy.y, width: 2, height: 5});
+                            }
                         })
 
                     enemies.push(enemy);

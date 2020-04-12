@@ -77,7 +77,7 @@ class Fleet extends Base {
 
                     let enemy = this.dispatchAircraft(this.canvas);
                     
-                    interval(1500)
+                    interval(3000)
                         .subscribe(() => {
                             enemy.projectiles = enemy.projectiles.filter((p: any) => p.y < this.canvas.height);
                             if (!enemy.isDestroyed) {

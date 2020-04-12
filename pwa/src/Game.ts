@@ -1,8 +1,8 @@
 import { Field } from './space/Field';
 import { Battleship } from './objects/Battleship';
 import { Fleet, Aircraft } from './objects/Fleet';
-import { combineLatest, interval, range } from 'rxjs';
-import { distinctUntilKeyChanged, scan, sample, map, toArray, flatMap } from 'rxjs/operators';
+import { combineLatest, interval, range, Subject, concat, Observable, of } from 'rxjs';
+import { distinctUntilKeyChanged, scan, sample, map, toArray, flatMap, startWith, concatAll } from 'rxjs/operators';
 import { Particle } from './space/Particle';
 import { Util } from './core/Util';
 
@@ -19,8 +19,13 @@ class Game {
     canvas: HTMLCanvasElement;
     explosion: any;
 
+    scoreSubject: Subject<any>;
+
     constructor(canvas: HTMLCanvasElement, width: number, height: number) {
         this.canvas = canvas;
+
+        this.scoreSubject = new Subject();
+
         
         this.field = new Field(canvas, width, height);
         this.ship = new Battleship(canvas);
@@ -31,6 +36,14 @@ class Game {
     }
 
     public start() {
+
+        let score =this.scoreSubject
+                    .pipe(scan((prev: number, curr: number) => {
+                        console.log("prev: %d, curr: %d", prev, curr);
+                        return prev + curr;
+                    }, 0))
+                    .pipe(startWith(0));
+
         let enemyFleet = this.enemyFleet.streamCoordinates();
         let stars = this.field.streamStarCoordinates();
         let shipLocations = this.ship.streamCoordinates();
@@ -64,8 +77,9 @@ class Game {
                         shipLocations,
                         projectiles,
                         enemyFleet,
-                        (stars, shipLocation, projectiles, enemyFleet) => {
-                            return {stars: stars, shipLocation: shipLocation, projectiles: projectiles, enemyFleet: enemyFleet};
+                        score,
+                        (stars, shipLocation, projectiles, enemyFleet, score) => {
+                            return {stars: stars, shipLocation: shipLocation, projectiles: projectiles, enemyFleet: enemyFleet, score: score};
                         }
                     )
                     // Ensure that combineLatest never yields values faster 
@@ -74,13 +88,14 @@ class Game {
 
         game.subscribe(
             (scene: any) => {
-                this.render(scene.stars, scene.shipLocation, scene.projectiles, scene.enemyFleet);
+                this.render(scene.stars, scene.shipLocation, scene.projectiles, scene.enemyFleet, scene.score);
             }
         );
     }
 
-    render(stars: any, shipLocation: any, projectiles: any, enemyFleet: any) {
+    render(stars: any, shipLocation: any, projectiles: any, enemyFleet: any, score: number) {
         this.field.render();
+        this.field.renderScore(score);
 
         stars.forEach((star: Particle) => star.render());
 
@@ -110,6 +125,9 @@ class Game {
                 projectiles.forEach(
                     (missile: any) => {
                         if (aircraft.y > 0 && missile.y > 0 && Util.didObjectOverlap(aircraft, missile)) {
+                            if (!aircraft.isDestroyed) {
+                                this.scoreSubject.next(1);
+                            }
                             aircraft.isDestroyed = true;
                             missile.y = -20;
                             this.destroyObject(aircraft, aircraft.width*2, aircraft.height * 2);

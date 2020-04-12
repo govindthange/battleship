@@ -16,7 +16,7 @@ The approach used for developing this game exposes limitations in popular known 
 * The imparative-style programming is not good for dealing with problems that are inherently asynchronous.
 * Callbacks are not good for solving complex asynchronous problems. Combining results from multiple callbacks is difficult. Nested callbacks are hard to comprehend.
 * Promise objects are no good either as they yield only single value; useless for handling recurring events or dealing with streams. In such scenarios one needs to recreate promise object.
-* We can't use event listeners as they ignore return values and also they cannot be passed as function paramters.
+* We can't use event listeners as they ignore return values. Events cannot be passed as function paramters and manipulated as a sequence. Events can only be handled individually after it happens and we will miss events if we start listening too late.
 
 ## Instructions
 
